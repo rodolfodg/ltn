@@ -16,6 +16,10 @@
       --green: #25d366;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -110,7 +114,7 @@
       font-weight: 700;
     }
 
-    /* NAVEGAÇÃO DE CATEGORIAS CENTRALIZADA */
+    /* NAVEGAÇÃO DE CATEGORIAS CENTRALIZADA E STICKY */
     .nav-categories {
       display: flex;
       justify-content: center;
@@ -148,6 +152,10 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 15px;
+    }
+
+    div[id^="cat-"] {
+      scroll-margin-top: 70px;
     }
 
     .category-title {
@@ -456,13 +464,13 @@
 
   <!-- NAVEGAÇÃO DE CATEGORIAS CENTRALIZADAS -->
   <div class="nav-categories">
-    <button class="cat-btn active" onclick="scrollToCat('pastel')">Pastéis</button>
-    <button class="cat-btn" onclick="scrollToCat('salgados')">Salgados</button>
-    <button class="cat-btn" onclick="scrollToCat('hamburguer')">Hambúrgueres</button>
-    <button class="cat-btn" onclick="scrollToCat('cachorro')">Cachorro Quente</button>
-    <button class="cat-btn" onclick="scrollToCat('tapioca')">Tapiocas</button>
-    <button class="cat-btn" onclick="scrollToCat('bebidas')">Bebidas</button>
-    <button class="cat-btn" onclick="scrollToCat('acai')">Açaí</button>
+    <button class="cat-btn active" onclick="scrollToCat('pastel', this)">Pastéis</button>
+    <button class="cat-btn" onclick="scrollToCat('salgados', this)">Salgados</button>
+    <button class="cat-btn" onclick="scrollToCat('hamburguer', this)">Hambúrgueres</button>
+    <button class="cat-btn" onclick="scrollToCat('cachorro', this)">Cachorro Quente</button>
+    <button class="cat-btn" onclick="scrollToCat('tapioca', this)">Tapiocas</button>
+    <button class="cat-btn" onclick="scrollToCat('bebidas', this)">Bebidas</button>
+    <button class="cat-btn" onclick="scrollToCat('acai', this)">Açaí</button>
   </div>
 
   <!-- CONTEÚDO DOS PRODUTOS -->
@@ -773,10 +781,10 @@
       calculateTroco();
     }
 
-    function scrollToCat(id) {
+    function scrollToCat(id, btnElement) {
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      if (event && event.target) {
-        event.target.classList.add('active');
+      if (btnElement) {
+        btnElement.classList.add('active');
       }
       const el = document.getElementById(`cat-${id}`);
       if (el) {
@@ -820,7 +828,6 @@
         return;
       }
 
-      // Trata vírgula e caracteres do input
       let cleanVal = inputVal.replace(/[^\d.,]/g, '').replace(',', '.');
       let valorPago = parseFloat(cleanVal);
 
@@ -842,6 +849,32 @@
       } else {
         displayDiv.innerText = '';
       }
+    }
+
+    // RESETAR FORMULÁRIO E CARRINHO APÓS O ENVIAR
+    function clearOrderAndReset() {
+      cart = {};
+      updateCartUI();
+
+      document.getElementById('client-name').value = '';
+      document.getElementById('client-street').value = '';
+      document.getElementById('client-number').value = '';
+      document.getElementById('client-bairro').value = '';
+      document.getElementById('client-ref').value = '';
+      document.getElementById('client-troco').value = '';
+      document.getElementById('client-obs').value = '';
+      document.getElementById('troco-calc-display').innerText = '';
+
+      const defaultPayment = document.querySelector('input[name="payment"][value="Dinheiro"]');
+      if (defaultPayment) defaultPayment.checked = true;
+      handlePaymentChange('Dinheiro');
+
+      const defaultTroco = document.querySelector('input[name="needTroco"][value="Nao"]');
+      if (defaultTroco) defaultTroco.checked = true;
+      toggleTrocoInput(false);
+
+      toggleModal(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function sendOrderToWhatsApp() {
@@ -912,10 +945,14 @@
         text += `*Observações:* ${obs}\n`;
       }
 
-      const phone = '5585993228124';
+      // NÚMERO DE DESTINO ATUALIZADO
+      const phone = '5583993228124';
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
       window.open(url, '_blank');
+
+      // Limpa os dados do pedido e retorna ao topo do cardápio
+      clearOrderAndReset();
     }
 
     renderMenu();
